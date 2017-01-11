@@ -1,0 +1,3 @@
+[submodule "Components/PA_CoroutineTracker"]
+	path = Components/PA_CoroutineTracker
+	url = https://github.com/PerfAssist/PA_CoroutineTracker.git
