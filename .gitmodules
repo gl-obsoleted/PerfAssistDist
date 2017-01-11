@@ -22,3 +22,6 @@
 [submodule "Others/iOS-MemoryProfiler"]
 	path = Others/iOS-MemoryProfiler
 	url = https://github.com/PerfAssist/iOS-MemoryProfiler.git
+[submodule "_External/docopt"]
+	path = _External/docopt
+	url = https://github.com/docopt/docopt.git
