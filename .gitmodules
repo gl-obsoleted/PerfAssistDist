@@ -7,3 +7,18 @@
 [submodule "Components/PA_LuaVisualizer"]
 	path = Components/PA_LuaVisualizer
 	url = https://github.com/PerfAssist/PA_LuaVisualizer.git
+[submodule "Others/PADemo_Logging"]
+	path = Others/PADemo_Logging
+	url = https://github.com/PerfAssist/PADemo_Logging.git
+[submodule "Others/PA_FontPruner"]
+	path = Others/PA_FontPruner
+	url = https://github.com/PerfAssist/PA_FontPruner.git
+[submodule "Others/PA_Term"]
+	path = Others/PA_Term
+	url = https://github.com/PerfAssist/PA_Term.git
+[submodule "Others/PA_TestLab"]
+	path = Others/PA_TestLab
+	url = https://github.com/PerfAssist/PA_TestLab.git
+[submodule "Others/iOS-MemoryProfiler"]
+	path = Others/iOS-MemoryProfiler
+	url = https://github.com/PerfAssist/iOS-MemoryProfiler.git
