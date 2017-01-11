@@ -43,11 +43,13 @@ def getCompSrcDir(comp):
 def getCompDestDir(dirname):
     return _join(PA_RootDir, "PA_Staging", "Assets", "PerfAssist", dirname)
 
-def perform_copy(src, dest, ignore=None):
+def perform_copy(src, dest, _ignore=None):
     if os.path.exists(dest):
         shutil.rmtree(dest)
 
-    shutil.copytree(src, dest, ignore)
+    # log.info("src: \n  %s", src)
+    # log.info("dest: \n  %s", dest)
+    shutil.copytree(src, dest, ignore=_ignore)
 
 def do_stage(args):
     filt = args['<component>'] or ''
