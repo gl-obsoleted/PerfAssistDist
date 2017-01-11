@@ -25,3 +25,6 @@
 [submodule "_External/docopt"]
 	path = _External/docopt
 	url = https://github.com/docopt/docopt.git
+[submodule "Components/PA_Common"]
+	path = Components/PA_Common
+	url = https://github.com/PerfAssist/PA_Common.git
