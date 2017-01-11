@@ -1,3 +1,9 @@
 [submodule "Components/PA_CoroutineTracker"]
 	path = Components/PA_CoroutineTracker
 	url = https://github.com/PerfAssist/PA_CoroutineTracker.git
+[submodule "Components/PA_ResourceTracker"]
+	path = Components/PA_ResourceTracker
+	url = https://github.com/PerfAssist/PA_ResourceTracker.git
+[submodule "Components/PA_LuaVisualizer"]
+	path = Components/PA_LuaVisualizer
+	url = https://github.com/PerfAssist/PA_LuaVisualizer.git
