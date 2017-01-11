@@ -1,90 +1,83 @@
 """ @package gen_dist
 <pre>
 Usage:
-    gen_dist.py
-    
+    gen_dist.py stage [<component>]
+    gen_dist.py version <major> <minor> <patch> [--postfix=<str>]
+
 Options:
     -h --help                   Show this screen.
+    --postfix=<str>             The postfix part of the version string, e.g. 'a' in 'v1.0.1a'
 </pre>
 """
-
-    # gen_redist.py --dir_src=<dir> --dir_dest=<dir> --pkg_name=<name> --pkg_version=<version> [--redist_proc=<name>] [--is_debug] [--is_x64]
-    # --dir_src=<dir>             The source folder of redist. 
-    # --dir_dest=<dir>            The target folder of redist. 
-    # --pkg_name=<name>           The name string.
-    # --pkg_version=<version>     The version string. [default: v1.0]
-    # --is_debug                  Whether it's the debug version
-    # --is_x64                    Whether it's the x64 version
-
 
 import logging
 import sys
 import shutil
 import os
 
+_join = os.path.join
+
+PA_RootDir = os.path.dirname(os.path.abspath(__file__));
+
 # add additional paths
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "_External", "docopt"))
-# print(sys.path)
+sys.path.append(_join(PA_RootDir, "_External", "docopt"))
+# log.info(sys.path)
 
 import docopt
 
 log = logging.getLogger(__name__)
 
-# pkg_redist_procs = {}
-# pkg_redist_procs[procs.libbitcoin.__name__] = procs.libbitcoin.redist_proc
+PA_Components = [ 'PA_Common', 'PA_CoroutineTracker', 'PA_LuaVisualizer', 'PA_ResourceTracker' ]
 
-# def cleanup(dest_dir):
-#     if os.path.isdir(dest_dir):
-#         log.info("Cleaning up dir '%s'.", dest_dir)
-#         shutil.rmtree(dest_dir)
-#     else:
-#         log.info("Cleaning up skipped, dir '%s' doesn't exist.", dest_dir)
+PA_CopyConfig = dict(
+    PA_Common=dict(src_dir="", dest_dir="PA_Common", ignore=shutil.ignore_patterns('.git', 'Docs*', 'README*')),
+    PA_CoroutineTracker=dict(src_dir=_join("Assets", "PerfAssist", "CoroutineTracker"), dest_dir="CoroutineTracker", ignore=shutil.ignore_patterns()),
+    PA_ResourceTracker=dict(src_dir=_join("Assets", "PerfAssist", "ResourceTracker"), dest_dir="ResourceTracker", ignore=shutil.ignore_patterns()),
+)
 
-def main():
+PA_CoroutineTracker_PluginsDir = _join("Assets", "Plugins", "CoroutineTracker")
+
+def getCompSrcDir(comp):
+    return _join(PA_RootDir, "Components", comp)
+
+def getCompDestDir(dirname):
+    return _join(PA_RootDir, "PA_Staging", "Assets", "PerfAssist", dirname)
+
+def perform_copy(src, dest, ignore=None):
+    if os.path.exists(dest):
+        shutil.rmtree(dest)
+
+    shutil.copytree(src, dest, ignore)
+
+def do_stage(args):
+    filt = args['<component>'] or ''
+    components = [comp for comp in PA_Components if filt.lower() in comp.lower() and comp in PA_CopyConfig]
+    # log.info("components: \n  %s", components)
+    for comp in components:
+        cfg = PA_CopyConfig[comp]
+        src = _join(getCompSrcDir(comp), cfg['src_dir'])
+        dest = _join(getCompDestDir(cfg['dest_dir']))
+        perform_copy(src, dest, ignore=cfg['ignore'])
+
+        # special case: copy 'Plugins' files for coroutine tracker
+        if comp == 'PA_CoroutineTracker':
+            perform_copy(
+                _join(PA_RootDir, "Components", 'PA_CoroutineTracker', PA_CoroutineTracker_PluginsDir), 
+                _join(PA_RootDir, "PA_Staging", PA_CoroutineTracker_PluginsDir))
+
+
+def do_package(args):
+    pass
+
+
+if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    # global preparing works: parsing args, configuring logging
     args = docopt.docopt(__doc__)
-    
-    # # validating parameters
-    # src = args["--dir_src"]
-    # if not os.path.isdir(src):
-    #     log.error("Source directory (%s) not found (or not a valid directory).", src)
-    #     return -1
-    # dest = args["--dir_dest"]
-    # if not os.path.isdir(dest):
-    #     log.error("Target directory (%s) not found (or not a valid directory).", dest)
-    #     return -1
+    # log.info("args: \n  {}".format(args))
 
-    # # preparing redist folder
-    # redist_folder = "{}-{}".format(args["--pkg_name"], args["--pkg_version"] )
-    # if args["--is_debug"]:
-    #     redist_folder += "-d"
-    # if args["--is_x64"]:
-    #     redist_folder += "-x64"
-
-    # redist_path = os.path.join(dest, redist_folder)
-    # cleanup(redist_path)
-
-    # # performing the redistribution process
-    # try:
-    #     if args["--redist_proc"]:
-    #         proc = pkg_redist_procs[args["--redist_proc"]]
-    #         if proc:
-    #             log.info("Triggering registered redist process. ('%s')", args["--redist_proc"])
-    #             proc(src, redist_path)
-    #         else:
-    #             log.error("Proc (%s) not found (or not registered correctly).", args["--redist_proc"])
-    #     else:
-    #         # copying files
-    #         log.info("Copying dir '%s' to '%s'.", src, redist_path)
-    #         shutil.copytree(src, redist_path)   # propergate the exception freely
-    # except Exception as e:
-    #     cleanup(redist_path)
-    #     raise e
-
-    return 0
- 
-if __name__ == '__main__':
-    ret = main()
-    sys.exit(ret)
+    # support executing multiple commands sequentially
+    PA_Commands = dict(stage=do_stage, package=do_package)
+    for k,v in PA_Commands.iteritems():
+        if k in args and args[k]:
+            v(args)
