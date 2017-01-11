@@ -59,7 +59,7 @@ def do_stage(args):
         cfg = PA_CopyConfig[comp]
         src = _join(getCompSrcDir(comp), cfg['src_dir'])
         dest = _join(getCompDestDir(cfg['dest_dir']))
-        perform_copy(src, dest, ignore=cfg['ignore'])
+        perform_copy(src, dest, _ignore=cfg['ignore'])
 
         # special case: copy 'Plugins' files for coroutine tracker
         if comp == 'PA_CoroutineTracker':

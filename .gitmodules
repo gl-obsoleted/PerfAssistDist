@@ -28,3 +28,6 @@
 [submodule "Components/PA_Common"]
 	path = Components/PA_Common
 	url = https://github.com/PerfAssist/PA_Common.git
+[submodule "_External/litjson"]
+	path = _External/litjson
+	url = https://github.com/lbv/litjson.git
