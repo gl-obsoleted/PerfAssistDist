@@ -5,7 +5,7 @@
 	path = Components/PA_ResourceTracker
 	url = https://github.com/PerfAssist/PA_ResourceTracker.git
 [submodule "Components/PA_LuaVisualizer"]
-	path = Components/PA_LuaVisualizer
+	path = Others/PA_LuaVisualizer
 	url = https://github.com/PerfAssist/PA_LuaVisualizer.git
 [submodule "Others/PADemo_Logging"]
 	path = Others/PADemo_Logging
