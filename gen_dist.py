@@ -27,13 +27,13 @@ import docopt
 
 log = logging.getLogger(__name__)
 
-PA_Components = [ 'PA_Common', 'PA_CoroutineTracker', 'PA_LuaVisualizer', 'PA_ResourceTracker' ]
+PA_Components = [ 'PA_Common', 'PA_CoroutineTracker', 'PA_ResourceTracker' ]
 
 PA_CopyConfig = dict(
     PA_Common=dict(src_dir="", dest_dir="PA_Common", ignore=shutil.ignore_patterns('.git', 'Docs*', 'README*')),
     PA_CoroutineTracker=dict(src_dir=_join("Assets", "PerfAssist", "CoroutineTracker"), dest_dir="CoroutineTracker", ignore=shutil.ignore_patterns()),
     PA_ResourceTracker=dict(src_dir=_join("Assets", "PerfAssist", "ResourceTracker"), dest_dir="ResourceTracker", ignore=shutil.ignore_patterns()),
-    PA_LuaVisualizer=dict(src_dir=_join("Hanoi-UnitySlua", "unity-demo", "Assets", "PerfAssist", "LuaProfilerWindow"), dest_dir="LuaProfilerWindow", ignore=shutil.ignore_patterns()),
+    # PA_LuaVisualizer=dict(src_dir=_join("Hanoi-UnitySlua", "unity-demo", "Assets", "PerfAssist", "LuaProfilerWindow"), dest_dir="LuaProfilerWindow", ignore=shutil.ignore_patterns()),
 )
 
 PA_CoroutineTracker_PluginsDir = _join("Assets", "Plugins", "CoroutineTracker")
@@ -51,6 +51,10 @@ def perform_copy(src, dest, _ignore=None):
     # log.info("src: \n  %s", src)
     # log.info("dest: \n  %s", dest)
     shutil.copytree(src, dest, ignore=_ignore)
+    if os.path.isfile(dest + '.meta'):
+        os.remove(dest + '.meta')
+    if os.path.isfile(src + '.meta'):
+        shutil.copyfile(src + '.meta', dest + '.meta')
 
 def do_stage(args):
     log.info("staging begins.")
@@ -60,7 +64,9 @@ def do_stage(args):
     for comp in components:
         log.info("staging: %s..", comp)
         cfg = PA_CopyConfig[comp]
-        src = _join(getCompSrcDir(comp), cfg['src_dir'])
+        src = getCompSrcDir(comp)
+        if cfg['src_dir'] != '':
+            src = _join(src, cfg['src_dir'])
         dest = _join(getCompDestDir(cfg['dest_dir']))
         perform_copy(src, dest, _ignore=cfg['ignore'])
 
