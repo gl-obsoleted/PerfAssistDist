@@ -27,13 +27,13 @@ import docopt
 
 log = logging.getLogger(__name__)
 
-PA_Components = [ 'PA_Common', 'PA_CoroutineTracker', 'PA_ResourceTracker' ]
+PA_Components = [ 'PA_Common', 'PA_CoroutineTracker', 'PA_ResourceTracker', 'PA_LuaVisualizer' ]
 
 PA_CopyConfig = dict(
     PA_Common=dict(src_dir="", dest_dir="PA_Common", ignore=shutil.ignore_patterns('.git', 'Docs*', 'README*')),
     PA_CoroutineTracker=dict(src_dir=_join("Assets", "PerfAssist", "CoroutineTracker"), dest_dir="CoroutineTracker", ignore=shutil.ignore_patterns()),
     PA_ResourceTracker=dict(src_dir=_join("Assets", "PerfAssist", "ResourceTracker"), dest_dir="ResourceTracker", ignore=shutil.ignore_patterns()),
-    # PA_LuaVisualizer=dict(src_dir=_join("Hanoi-UnitySlua", "unity-demo", "Assets", "PerfAssist", "LuaProfilerWindow"), dest_dir="LuaProfilerWindow", ignore=shutil.ignore_patterns()),
+    PA_LuaVisualizer=dict(src_dir=_join("port-unity-slua", "Assets", "PerfAssist", "LuaProfilerWindow"), dest_dir="LuaProfilerWindow", ignore=shutil.ignore_patterns()),
 )
 
 PA_CoroutineTracker_PluginsDir = _join("Assets", "Plugins", "CoroutineTracker")
