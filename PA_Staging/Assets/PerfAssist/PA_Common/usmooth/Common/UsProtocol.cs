@@ -47,6 +47,7 @@ public enum eNetCmd
     CL_QuerySwitches,
     CL_QuerySliders,
 
+    CL_RequestStackSummary,
     CL_StartAnalysePixels,
 
     CL_RequestStackData,
@@ -80,6 +81,9 @@ public enum eNetCmd
     SV_StartAnalysePixels,
 
     SV_CmdEnd,
+
+    SV_SendLuaProfilerMsg,
+    SV_StartLuaProfilerMsg,
 }
 
 public enum eSubCmd_TransmitStage

@@ -3,7 +3,7 @@ using System.Collections;
 
 public class MemConst 
 {
-    public static float TopBarHeight = 25;
+    public static float TopBarHeight = 60;
     public static int InspectorWidth = 400;
     public static string[] ShowTypes = new string[] { "Table View", "TreeMap View" };
 
@@ -17,6 +17,12 @@ public class MemConst
     public static int _1MB = _1KB * _1KB;
 
     public static readonly string SearchResultTypeString = "{search_result}";
+    public static readonly string RemoteIPDefaultText = "<remote_ip>";
+
+    public static readonly string LocalhostIP = "127.0.0.1";
+
+    public static readonly string UPLOAD_HTTP_URL ="http://10.20.80.59:88/ramPush";
+        //"http://jx3ml.rdev.kingsoft.net:88/ramPush";
 }
 
 public class MemStyles
