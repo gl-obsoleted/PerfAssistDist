@@ -1,6 +1,8 @@
 ﻿using MemoryProfilerWindow;
 using System;
 using System.Collections.Generic;
+using UnityEditor;
+using UnityEditor.MemoryProfiler;
 using UnityEngine;
 
 public enum TrackerMode
@@ -10,13 +12,22 @@ public enum TrackerMode
     File,
 }
 
-public class TrackerModeManager 
+public class TrackerModeManager : TrackerModeOwner
 {
+    public bool AutoSaveOnSnapshot { get { return _configWindow.AutoSaveOnSnapshot; } }
+
     public TrackerMode CurrentMode { get { return _currentMode; } }
     TrackerMode _currentMode = TrackerMode.Editor;
 
-    public CrawledMemorySnapshot SelectedUnpacked { get { var curMode = GetCurrentMode(); return curMode != null ? curMode.SelectedUnpacked : null ; } }
-    public CrawledMemorySnapshot PrevUnpacked { get { var curMode = GetCurrentMode(); return curMode != null ? curMode.PrevUnpacked : null; } }
+    public CrawledMemorySnapshot Selected { get { var curMode = GetCurrentMode(); return curMode != null ? curMode.Selected : null; } }
+    public CrawledMemorySnapshot Diff_1st { get { var curMode = GetCurrentMode(); return curMode != null ? curMode.Diff_1st : null ; } }
+    public CrawledMemorySnapshot Diff_2nd { get { var curMode = GetCurrentMode(); return curMode != null ? curMode.Diff_2nd : null; } }
+
+    public TrackerModeManager()
+    {
+        foreach (var t in _modes.Values)
+            t.SetOwner(this);
+    }
 
     public void Update()
     {
@@ -25,10 +36,20 @@ public class TrackerModeManager
             curMode.Update();
     }
 
+    public void Clear()
+    {
+        foreach (var t in _modes.Values)
+            t.Clear();
+    }
+
+    private MemConfigPopup _configWindow = new MemConfigPopup();
+    private Rect _optionPopupRect;
+
     public void OnGUI()
     {
         try
         {
+            // shared functionalities
             GUILayout.BeginHorizontal(MemStyles.Toolbar);
             int gridWidth = 250;
             int selMode = GUI.SelectionGrid(new Rect(0, 0, gridWidth, 20), (int)_currentMode,
@@ -39,8 +60,52 @@ public class TrackerModeManager
             }
             GUILayout.Space(gridWidth + 30);
             GUILayout.Label(TrackerModeConsts.ModesDesc[selMode]);
+            GUILayout.FlexibleSpace();
+
+            if (_currentMode == TrackerMode.File)
+            {
+                if (GUILayout.Button("Load Session", MemStyles.ToolbarButton, GUILayout.MaxWidth(100)))
+                {
+                    TrackerMode_File mode = GetCurrentMode() as TrackerMode_File;
+                    if (mode != null)
+                    {
+                        mode.LoadSession();
+                        ChangeSnapshotSelection();
+                    }
+                }
+            }
+
+            if (GUILayout.Button("Clear Session", MemStyles.ToolbarButton, GUILayout.MaxWidth(100)))
+            {
+                TrackerMode_Base mode = GetCurrentMode();
+                if (mode != null)
+                {
+                    mode.Clear();
+                }
+            }
+            if (GUILayout.Button("Open Dir", MemStyles.ToolbarButton, GUILayout.MaxWidth(100)))
+            {
+                EditorUtility.RevealInFinder(MemUtil.SnapshotsDir);
+            }
+            if (GUILayout.Button("Options", EditorStyles.toolbarDropDown, GUILayout.Width(100)))
+            {
+                try
+                {
+                    PopupWindow.Show(_optionPopupRect, _configWindow);
+                }
+                catch (ExitGUIException)
+                {
+                    // have no idea why Unity throws ExitGUIException() in GUIUtility.ExitGUI()
+                    // so we silently ignore the exception 
+                }
+            }
+            if (Event.current.type == EventType.Repaint)
+                _optionPopupRect = GUILayoutUtility.GetLastRect();
             GUILayout.EndHorizontal();
 
+            GUILayout.Space(10);
+
+            // mode-specific controls
             GUILayout.BeginHorizontal();
             var curMode = GetCurrentMode();
             if (curMode != null)
@@ -53,10 +118,23 @@ public class TrackerModeManager
         }
     }
 
-    public void SetSelectionChanged(SelectionChangeHandler handler)
+    public void AddSnapshot(PackedMemorySnapshot packed)
     {
-        foreach (var t in _modes.Values)
-            t.SelectionChanged = handler;
+        TrackerMode_Base curMode = GetCurrentMode();
+        if (curMode == null)
+            return;
+
+        var snapshotInfo = new MemSnapshotInfo();
+        if (!snapshotInfo.AcceptSnapshot(packed))
+            return;
+
+        curMode.AddSnapshot(snapshotInfo);
+
+        if (AutoSaveOnSnapshot)
+        {
+            if (!curMode.SaveSessionInfo(packed, snapshotInfo.Unpacked))
+                Debug.LogErrorFormat("Save Session Info Failed!");
+        }
     }
 
     public TrackerMode_Base GetCurrentMode()

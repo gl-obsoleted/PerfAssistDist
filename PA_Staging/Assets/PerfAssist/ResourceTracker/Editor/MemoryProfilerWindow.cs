@@ -20,7 +20,6 @@ namespace MemoryProfilerWindow
     {
         public CrawledMemorySnapshot UnpackedCrawl { get { return _unpackedCrawl; } }
         CrawledMemorySnapshot _unpackedCrawl;
-        CrawledMemorySnapshot _preUnpackedCrawl;
 
         Inspector _inspector;
         TreeMapView _treeMapView;
@@ -41,7 +40,11 @@ namespace MemoryProfilerWindow
         MemoryProfilerWindow()
         {
             MemorySnapshot.OnSnapshotReceived += OnSnapshotReceived;
-            _modeMgr.SetSelectionChanged(OnSnapshotSelectionChanged);
+
+            _modeMgr.OnSnapshotSelectionChanged += RefreshView;
+            _modeMgr.OnSnapshotsCleared += RefreshView;
+            _modeMgr.OnSnapshotDiffBegin += RefreshView;
+            _modeMgr.OnSnapshotDiffEnd += RefreshView;
         }
 
         void InitNet()
@@ -73,6 +76,8 @@ namespace MemoryProfilerWindow
 
         void OnDestroy()
         {
+            _modeMgr.Clear();
+
             if (_treeMapView != null)
                 _treeMapView.CleanupMeshes();
 
@@ -85,23 +90,7 @@ namespace MemoryProfilerWindow
 
         void OnSnapshotReceived(PackedMemorySnapshot packed)
         {
-            TrackerMode_Base curMode = _modeMgr.GetCurrentMode();
-            if (curMode != null)
-            {
-                var snapshotInfo = new MemSnapshotInfo();
-                snapshotInfo.setSnapShotTime(Time.realtimeSinceStartup);
-
-                MemUtil.LoadSnapshotProgress(0.01f, "creating Crawler");
-                var packedCrawled = new Crawler().Crawl(packed);
-                MemUtil.LoadSnapshotProgress(0.7f, "unpacking");
-                snapshotInfo.unPacked = CrawlDataUnpacker.Unpack(packedCrawled);
-                MemUtil.LoadSnapshotProgress(1.0f, "done");
-
-                curMode.AddSnapshot(snapshotInfo);
-
-                if (!curMode.SaveSessionInfo(packed, snapshotInfo.unPacked))
-                    Debug.LogErrorFormat("Save Session Info Failed!");
-            }
+            _modeMgr.AddSnapshot(packed);
         }
 
         void Update()
@@ -157,20 +146,19 @@ namespace MemoryProfilerWindow
                 _modeMgr.OnGUI();
 
                 // view bar
-                GUILayout.BeginArea(new Rect(0, MemConst.TopBarHeight, position.width - MemConst.InspectorWidth, 30));
-                GUILayout.BeginHorizontal(MemStyles.Toolbar);
-                int selected = GUILayout.SelectionGrid((int)m_selectedView, MemConst.ShowTypes, MemConst.ShowTypes.Length, MemStyles.ToolbarButton);
-                if (m_selectedView != (eShowType)selected)
-                {
-                    m_selectedView = (eShowType)selected;
-                    RefreshCurrentView();
-                }
-                GUILayout.EndHorizontal();
-                GUILayout.EndArea();
+                //GUILayout.BeginArea(new Rect(0, MemConst.TopBarHeight, position.width - MemConst.InspectorWidth, 30));
+                //GUILayout.BeginHorizontal(MemStyles.Toolbar);
+                //int selected = GUILayout.SelectionGrid((int)m_selectedView, MemConst.ShowTypes, MemConst.ShowTypes.Length, MemStyles.ToolbarButton);
+                //if (m_selectedView != (eShowType)selected)
+                //{
+                //    m_selectedView = (eShowType)selected;
+                //    RefreshView();
+                //}
+                //GUILayout.EndHorizontal();
+                //GUILayout.EndArea();
 
-                // selected views
-                float TabHeight = 30;
-                float yoffset = MemConst.TopBarHeight + TabHeight;
+                // selected view
+                float yoffset = MemConst.TopBarHeight /*+ 30*/; // view bar is temporarily disabled
                 Rect view = new Rect(0f, yoffset, position.width - MemConst.InspectorWidth, position.height - yoffset);
                 switch (m_selectedView)
                 {
@@ -228,19 +216,30 @@ namespace MemoryProfilerWindow
             return true;
         }
 
-        public void RefreshCurrentView()
+        public void RefreshView()
         {
-            if (_unpackedCrawl == null)
+            var mode = _modeMgr.GetCurrentMode();
+            if (mode == null)
                 return;
+
+            _unpackedCrawl = mode.IsDiffing ? _modeMgr.Diff_2nd : _modeMgr.Selected;
+            _inspector = _unpackedCrawl != null ? new Inspector(this, _unpackedCrawl) : null;
 
             switch (m_selectedView)
             {
                 case eShowType.InTable:
                     if (_tableBrowser != null)
-                        if (_tableBrowser._showdiffToggle && _preUnpackedCrawl != null)
-                            _tableBrowser.RefreshDiffData(_unpackedCrawl, _preUnpackedCrawl);
+                    {
+                        if (mode.IsDiffing)
+                        {
+                            _tableBrowser.ShowDiffedSnapshots(_modeMgr.Diff_1st, _unpackedCrawl);
+                        }
                         else
-                            _tableBrowser.RefreshData(_unpackedCrawl);
+                        {
+                            _tableBrowser.ShowSingleSnapshot(_unpackedCrawl);
+                        }
+
+                    }
                     break;
                 case eShowType.InTreemap:
                     if (_treeMapView != null)
@@ -249,16 +248,7 @@ namespace MemoryProfilerWindow
                 default:
                     break;
             }
-        }
 
-        private void OnSnapshotSelectionChanged()
-        {
-            _unpackedCrawl = _modeMgr.SelectedUnpacked;
-            _preUnpackedCrawl = _modeMgr.PrevUnpacked;
-
-            _inspector = new Inspector(this, _unpackedCrawl);
-
-            RefreshCurrentView();
             Repaint();
         }
     }
