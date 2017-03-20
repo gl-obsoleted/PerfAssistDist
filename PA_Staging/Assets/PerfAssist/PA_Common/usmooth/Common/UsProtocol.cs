@@ -42,8 +42,6 @@ public enum eNetCmd
     CL_FrameV2_RequestMeshes,
     CL_FrameV2_RequestNames,
 
-    CL_FlyToObject,
-
     CL_QuerySwitches,
     CL_QuerySliders,
 
@@ -73,6 +71,9 @@ public enum eNetCmd
     SV_QuerySwitchesResponse,
     SV_QuerySlidersResponse,
     SV_QueryStacksResponse,
+
+
+    SV_VarTracerJsonParameter,
 
 
     SV_StressTestNames,
