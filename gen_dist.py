@@ -89,7 +89,7 @@ if __name__ == '__main__':
     # log.info("args: \n  {}".format(args))
 
     PA_Commands = dict(stage=do_stage, package=do_package)
-    for k,v in PA_Commands.iteritems():
+    for k,v in PA_Commands.items():
         if k in args and args[k]:
             v(args)
             break
