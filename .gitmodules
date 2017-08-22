@@ -28,9 +28,6 @@
 [submodule "_External/litjson"]
 	path = _External/litjson
 	url = https://github.com/lbv/litjson.git
-[submodule "Others/PA_LuaVisualizer"]
-	path = Components/PA_LuaVisualizer
-	url = https://github.com/PerfAssist/PA_LuaVisualizer.git
 [submodule "Components/PA_VarTracer"]
 	path = Components/PA_VarTracer
 	url = https://github.com/PerfAssist/PA_VarTracer.git
