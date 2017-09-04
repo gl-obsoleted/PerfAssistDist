@@ -24,8 +24,6 @@ namespace MemoryProfilerWindow
         private float _textureSize = 128.0f;
 
         MemObjHistory Instance = new MemObjHistory();
-        //public event SysPost.StdMulticastDelegation RefreshCallStack;
-
 
         static class Styles
         {
@@ -216,7 +214,7 @@ namespace MemoryProfilerWindow
             }
             else
             {
-                EditorGUILayout.LabelField("Can't instance texture,maybe it was alreadt released.");
+                EditorGUILayout.LabelField("Can't instance texture,maybe it was already released.");
             }
         }
 
@@ -376,7 +374,6 @@ namespace MemoryProfilerWindow
                         return false;
                     });
         }*/
-
 
         private void DrawLinks(IEnumerable<UInt64> pointers)
         {
